@@ -1,5 +1,7 @@
 config.json
 self.php
 bot.lock
-config.json
 config.php
+tempHandler.php
+upd.php
+selfBegoBem.php

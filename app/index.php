@@ -52,6 +52,32 @@ if (!file_exists('bot.lock')) {
 }
 $lock = fopen('bot.lock', 'r+');
 
+
+class EventHandler extends \danog\MadelineProto\EventHandler
+{
+    private $selfId;
+    private $plugins;
+
+    public function __construct($MadelineProto)
+    {
+        parent::__construct($MadelineProto);
+        $this->selfId = intval($GLOBALS['SELF_ID']);
+    }
+    public function onUpdateEditChannelMessage($update)
+    {
+        yield $this->onUpdateNewMessage($update);
+    }
+    public function onUpdateNewChannelMessage($update)
+    {
+        yield $this->onUpdateNewMessage($update);
+    }
+    public function onUpdateNewMessage($update)
+    {
+        yield $this->plugins->process($this, $this->selfId, $update);
+    }
+}
+
+
 $try = 1;
 $locked = false;
 while (!$locked) {
@@ -86,12 +112,11 @@ closeConnection('✅ Bot Is Running ...');
 if (file_exists('MadelineProto.log')) {unlink('MadelineProto.log');}
 $settings['logger']['logger_level'] = \danog\MadelineProto\Logger::FATAL_ERROR;
 $settings['logger']['logger']       = \danog\MadelineProto\Logger::FILE_LOGGER;
-$settings['connection_settings']['all']['test_mode'] = $GLOBALS['TEST_MODE'];
+//$settings['connection_settings']['all']['test_mode'] = $GLOBALS['TEST_MODE'];
 $settings['app_info']['api_id']   = $GLOBALS['API_ID'];
 $settings['app_info']['api_hash'] = $GLOBALS['API_HASH'];
 
 $MadelineProto = new \danog\MadelineProto\API('session.madeline', $settings);
-$MadelineProto->settings = $settings;
 $MadelineProto->async(true);
 
 $MadelineProto->loop(function () use ($MadelineProto) {
